@@ -9,12 +9,12 @@ const PluginAPI = require('./PluginAPI')
 const dotenv = require('dotenv')
 const dotenvExpand = require('dotenv-expand')
 const defaultsDeep = require('lodash.defaultsdeep')
-const {warn, error, isPlugin, loadModule} = require('@vue/cli-shared-utils')
+const { warn, error, isPlugin, loadModule } = require('./cli-shared-utils')
 
-const {defaults, validate} = require('./options')
+const { defaults, validate } = require('./options')
 
 module.exports = class Service {
-  constructor(context, {plugins, pkg, inlineOptions, useBuiltIn} = {}) {
+  constructor(context, { plugins, pkg, inlineOptions, useBuiltIn } = {}) {
     process.VUE_CLI_SERVICE = this
     this.initialized = false
     this.context = context
@@ -29,7 +29,7 @@ module.exports = class Service {
 
     this.plugins = this.resolvePkg(plugins, useBuiltIn)
 
-    this.modes = this.plugins.reduce((modes, {apply: {defaultModes}}) => {
+    this.modes = this.plugins.reduce((modes, { apply: { defaultModes } }) => {
       return Object.assign(modes, defaultModes)
     }, {})
   }
@@ -38,7 +38,7 @@ module.exports = class Service {
     if (inlinePkg) {
       return inlinePkg
     } else if (fs.existsSync(path.join(context, 'package.json'))) {
-      const pkg = readPkg.sync({cwd: context})
+      const pkg = readPkg.sync({ cwd: context })
       if (pkg.vuePlugins && pkg.vuePlugins.resolveFrom) {
         this.pkgContext = path.resolve(context, pkg.vuePlugins.resolveFrom)
         return this.resolvePkg(null, this.pkgContext)
@@ -67,7 +67,7 @@ module.exports = class Service {
 
     debug('vue:project-config')(this.projectOptions)
 
-    this.plugins.forEach(({id, apply}) => {
+    this.plugins.forEach(({ id, apply }) => {
       apply(new PluginAPI(id, this), this.projectOptions)
     })
 
@@ -86,7 +86,7 @@ module.exports = class Service {
 
     const load = envPath => {
       try {
-        const env = dotenv.config({path: envPath, debug: process.env.DEBUG})
+        const env = dotenv.config({ path: envPath, debug: process.env.DEBUG })
         dotenvExpand(env)
         logger(envPath, env)
       } catch (err) {
@@ -153,7 +153,7 @@ module.exports = class Service {
               warn(`Optional dependency ${id} is not installed.`)
             }
 
-            return {id, apply}
+            return { id, apply }
           } else {
             return idToPlugin(id)
           }
@@ -198,7 +198,7 @@ module.exports = class Service {
       args._.shift()
       rawArgv.shift()
     }
-    const {fn} = command
+    const { fn } = command
     return fn(args, rawArgv)
   }
 

@@ -1,7 +1,6 @@
 const {
   info,
   hasProjectYarn,
-  hasProjectPnpm,
   openBrowser,
   IpcMessenger
 } = require('@vue/cli-shared-utils')
@@ -178,7 +177,7 @@ module.exports = (api, options) => {
             publicPath: options.publicPath,
             overlay: isProduction // TODO disable this
               ? false
-              : {warnings: false, errors: true}
+              : { warnings: false, errors: true }
           },
           projectDevServerOptions,
           {
@@ -247,7 +246,102 @@ module.exports = (api, options) => {
             `  - Local:   ${chalk.cyan(urls.localUrlForTerminal)} ${copied}`
           )
 
-          //TODO:
+          if (!isInContainer) {
+            console.log(`  - Network: ${chalk.cyan(networkUrl)}`)
+          } else {
+            console.log()
+            console.log(
+              chalk.yellow(
+                `  It seems you are running Vue CLI inside a container.`
+              )
+            )
+            if (
+              !publicUrl &&
+              options.publicPath &&
+              options.publicPath !== '/'
+            ) {
+              console.log()
+              console.log(
+                chalk.yellow(
+                  `  Since you are using a non-root publicPath, the hot-reload socket`
+                )
+              )
+              console.log(
+                chalk.yellow(
+                  `  will not be able to infer the correct URL to connect. You should`
+                )
+              )
+              console.log(
+                chalk.yellow(
+                  `  explicitly specify the URL via ${chalk.blue(
+                    `devServer.public`
+                  )}.`
+                )
+              )
+              console.log()
+            }
+            console.log(
+              chalk.yellow(
+                `  Access the dev server via ${chalk.cyan(
+                  `${protocol}://localhost:<your container's external mapped port>${
+                    options.publicPath
+                  }`
+                )}`
+              )
+            )
+          }
+          console.log()
+
+          if (isFirstCompile) {
+            isFirstCompile = false
+            if (!isProduction) {
+              const buildCommand = hasProjectYarn(api.getCwd())
+                ? `yarn build`
+                : `npm run build`
+              console.log(`  Note that the development build is not optimized.`)
+              console.log(
+                `  To create a production build, run ${chalk.cyan(
+                  buildCommand
+                )}.`
+              )
+            } else {
+              console.log(`  App is served in production mode.`)
+              console.log(`  Note this is for preview or E2E testing only.`)
+            }
+            console.log()
+
+            if (args.open || projectDevServerOptions.open) {
+              const pageUri =
+                projectDevServerOptions.openPage &&
+                typeof projectDevServerOptions.openPage === 'string'
+                  ? projectDevServerOptions.openPage
+                  : ''
+              openBrowser(urls.localUrlForBrowser + pageUri)
+            }
+
+            // Send final app URL
+            if (args.dashboard) {
+              const ipc = new IpcMessenger()
+              ipc.send({
+                vueServe: {
+                  url: urls.localUrlForBrowser
+                }
+              })
+            }
+
+            resolve({
+              server,
+              url: urls.localUrlForBrowser
+            })
+          } else if (process.env.VUE_CLI_TEST) {
+            console.log('App updated')
+          }
+        })
+
+        server.listen(port, host, err => {
+          if (err) {
+            reject(err)
+          }
         })
       })
     }
@@ -255,7 +349,7 @@ module.exports = (api, options) => {
 }
 
 function addDevClientToEntry(config, devClient) {
-  const {entry} = config
+  const { entry } = config
   if (typeof entry === 'object' && !Array.isArray(entry)) {
     Object.keys(entry).forEach(key => {
       entry[key] = devClient.concat(entry[key])
@@ -286,7 +380,7 @@ function genHistoryApiFallbackRewrites(baseUrl, pages = {}) {
 
   return [
     ...multiPageRewrites,
-    {from: /./, to: path.posix.join(baseUrl, 'index.html')}
+    { from: /./, to: path.posix.join(baseUrl, 'index.html') }
   ]
 }
 
