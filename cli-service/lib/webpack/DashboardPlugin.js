@@ -39,12 +39,21 @@ class DashboardPlugin {
     if (this.autoDisconnect) ipc.disconnect()
   }
 
-  apply(compiler){
+  apply(compiler) {
     let sendData = this.sendData
-    let timer 
+    let timer
 
     let assetSources = new Map()
 
+    if (!sendData) {
+      sendData = data =>
+        ipc.send({
+          webpackDashboardData: {
+            type: this.type,
+            value: data
+          }
+        })
+    }
   }
 }
 
