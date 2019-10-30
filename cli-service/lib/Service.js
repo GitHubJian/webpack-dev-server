@@ -9,7 +9,7 @@ const PluginAPI = require('./PluginAPI')
 const dotenv = require('dotenv')
 const dotenvExpand = require('dotenv-expand')
 const defaultsDeep = require('lodash.defaultsdeep')
-const { warn, error, isPlugin, loadModule } = require('./cli-shared-utils')
+const { warn, error, isPlugin, loadModule } = require('../../cli-shared-utils')
 
 const { defaults, validate } = require('./options')
 
@@ -27,7 +27,7 @@ module.exports = class Service {
 
     this.pkg = this.resolvePkg(pkg)
 
-    this.plugins = this.resolvePkg(plugins, useBuiltIn)
+    this.plugins = this.resolvePlugins(plugins, useBuiltIn)
 
     this.modes = this.plugins.reduce((modes, { apply: { defaultModes } }) => {
       return Object.assign(modes, defaultModes)
@@ -124,8 +124,8 @@ module.exports = class Service {
     const builtInPlugins = [
       './commands/serve',
       './commands/build',
-      './commands/inspect',
-      './commands/help',
+      // './commands/inspect',
+      // './commands/help',
       './config/base',
       './config/css',
       './config/prod',
@@ -186,7 +186,7 @@ module.exports = class Service {
 
     this.init(mode)
 
-    args._ = arg._ || []
+    args._ = args._ || []
     let command = this.commands[name]
     if (!command && name) {
       error(`command "${name}" does not exist.`)
@@ -204,6 +204,7 @@ module.exports = class Service {
 
   resolveChainableWebpackConfig() {
     const chainableConfig = new Config()
+    // apply chains
     this.webpackChainFns.forEach(fn => fn(chainableConfig))
     return chainableConfig
   }
@@ -214,6 +215,7 @@ module.exports = class Service {
         'Service must call init() before calling resolveWebpackConfig().'
       )
     }
+    // get raw config
     let config = chainableConfig.toConfig()
     const original = config
     this.webpackRawConfigFns.forEach(fn => {
@@ -244,25 +246,14 @@ module.exports = class Service {
       )
     }
 
-    if (typeof config.entry !== 'function') {
-      let entryFiles
-      if (typeof config.entry === 'string') {
-        entryFiles = [config.entry]
-      } else if (Array.isArray(config.entry)) {
-        entryFiles = config.entry
-      } else {
-        entryFiles = Object.values(config.entry || []).reduce(
-          (allEntries, curr) => {
-            return allEntries.concat(curr)
-          },
-          []
-        )
-      }
-
-      entryFiles = entryFiles.map(file => path.resolve(this.context, file))
-      process.env.VUE_CLI_ENTRY_FILES = JSON.stringify(entryFiles)
-    }
-
+    const entryFiles = Object.values(config.entry || []).reduce(
+      (allEntries, curr) => {
+        return allEntries.concat(curr)
+      },
+      []
+    )
+    process.env.VUE_CLI_ENTRY_FILES = JSON.stringify(entryFiles)
+      debugger
     return config
   }
 
@@ -314,13 +305,13 @@ module.exports = class Service {
         )
       }
       resolved = fileConfig
-      resolveFrom = 'vue.config.js'
+      resolvedFrom = 'vue.config.js'
     } else if (pkgConfig) {
       resolved = pkgConfig
-      resolveFrom = '"vue" field in package.json'
+      resolvedFrom = '"vue" field in package.json'
     } else {
       resolved = this.inlineOptions || {}
-      resolveFrom = 'inline options'
+      resolvedFrom = 'inline options'
     }
 
     if (resolved.css && typeof resolved.css.modules !== 'undefined') {

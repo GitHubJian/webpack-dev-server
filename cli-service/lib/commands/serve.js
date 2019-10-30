@@ -3,7 +3,7 @@ const {
   hasProjectYarn,
   openBrowser,
   IpcMessenger
-} = require('@vue/cli-shared-utils')
+} = require('../../../cli-shared-utils')
 
 const defaults = {
   host: '0.0.0.0',
@@ -283,9 +283,7 @@ module.exports = (api, options) => {
             console.log(
               chalk.yellow(
                 `  Access the dev server via ${chalk.cyan(
-                  `${protocol}://localhost:<your container's external mapped port>${
-                    options.publicPath
-                  }`
+                  `${protocol}://localhost:<your container's external mapped port>${options.publicPath}`
                 )}`
               )
             )

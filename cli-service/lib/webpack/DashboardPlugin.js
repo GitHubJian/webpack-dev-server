@@ -54,6 +54,99 @@ class DashboardPlugin {
           }
         })
     }
+
+    // Progress status
+    let progressTime = Date.now()
+    const progressPlugin = new webpack.ProgressPlugin((percent, msg) => {
+      // Debouncing
+      const time = Date.now()
+      if (time - progressTime > 300) {
+        progressTime = time
+        sendData([
+          {
+            type: 'status',
+            value: 'Compiling'
+          },
+          {
+            type: 'progress',
+            value: percent
+          },
+          {
+            type: 'operations',
+            value: msg + getTimeMessage(timer)
+          }
+        ])
+      }
+    })
+    progressPlugin.apply(compiler)
+
+    compiler.hooks.watchRun.tap(ID, c => {
+      this.watching = true
+    })
+
+    compiler.hooks.run.tap(ID, c => {
+      this.watching = false
+    })
+
+    compiler.hooks.compile.tap(ID, () => {
+      timer = Data.now()
+
+      sendData([
+        {
+          type: 'status',
+          value: 'Compiling'
+        },
+        {
+          type: 'progress',
+          value: 0
+        }
+      ])
+    })
+
+    compiler.hooks.invalid.tap(ID, () => {
+      sendData([
+        {
+          type: 'status',
+          value: 'Invalidated'
+        },
+        {
+          type: 'progress',
+          value: 0
+        },
+        {
+          type: 'operations',
+          value: 'idle'
+        }
+      ])
+    })
+
+    compiler.hooks.failed.tap(ID, () => {
+      sendData([
+        {
+          type: 'status',
+          value: 'Failed'
+        },
+        {
+          type: 'operations',
+          value: `idle${getTimeMessage(timer)}`
+        }
+      ])
+    })
+
+    compiler.hooks.afterEmit.tap(ID, compilation => {
+      assetSources = new Map()
+      for (const name in compilation.assets) {
+        const asset = compilation.assets[name]
+        assetSources.set(
+          name.replace(FILENAME_QUERY_REGEXP, ''),
+          asset.source()
+        )
+      }
+    })
+
+    compiler.hooks.done.tap(ID, state => {
+      let statsData = state.toJson()
+    })
   }
 }
 

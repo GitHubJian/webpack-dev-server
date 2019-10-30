@@ -1,7 +1,7 @@
 const path = require('path')
 const hash = require('hash-sum')
 const semver = require('semver')
-const {matchesPluginId} = require('@vue/cli-shared-utils')
+const { matchesPluginId } = require('../../cli-shared-utils')
 
 class PluginAPI {
   constructor(id, service) {
@@ -10,7 +10,7 @@ class PluginAPI {
   }
 
   get version() {
-    return require('../package.json').version
+    return '1.0.0'
   }
 
   assertVersion(range) {
@@ -27,9 +27,7 @@ class PluginAPI {
     if (semver.satisfies(this.version, range)) return
 
     throw new Error(
-      `Require @vue/cli-service "${range}", but was loaded with "${
-        this.version
-      }".`
+      `Require @vue/cli-service "${range}", but was loaded with "${this.version}".`
     )
   }
 
@@ -50,7 +48,7 @@ class PluginAPI {
       fn = opts
       opts = null
     }
-    this.service.commands[name] = {fn, opts: opts || {}}
+    this.service.commands[name] = { fn, opts: opts || {} }
   }
 
   chainWebpack(fn) {
@@ -86,7 +84,7 @@ class PluginAPI {
 
     const variables = {
       partialIdentifier,
-      'cli-service': require('../package.json').version,
+      'cli-service': '1.0.0',
       'cache-loader': require('cache-loader/package.json').version,
       env: process.env.NODE_ENV,
       test: !!process.env.VUE_CLI_TEST,
@@ -128,7 +126,7 @@ class PluginAPI {
     }
 
     const cacheIdentifier = hash(variables)
-    return {cacheDirectory, cacheIdentifier}
+    return { cacheDirectory, cacheIdentifier }
   }
 }
 

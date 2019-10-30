@@ -4,7 +4,7 @@ const path = require('path')
 const LRU = require('lru-cache')
 
 let _hasGit
-const _gitProjects = new Lru({
+const _gitProjects = new LRU({
   max: 10,
   maxAge: 1000
 })
