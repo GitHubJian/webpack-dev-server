@@ -125,7 +125,7 @@ module.exports = class Service {
       './commands/serve',
       './commands/build',
       // './commands/inspect',
-      // './commands/help',
+      './commands/help',
       './config/base',
       './config/css',
       './config/prod',
@@ -253,7 +253,7 @@ module.exports = class Service {
       []
     )
     process.env.VUE_CLI_ENTRY_FILES = JSON.stringify(entryFiles)
-      debugger
+
     return config
   }
 

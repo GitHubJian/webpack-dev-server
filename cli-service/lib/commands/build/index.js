@@ -149,7 +149,6 @@ async function build(args, api, options) {
   }
 
   return new Promise((resolve, reject) => {
-    debugger
     webpack(webpackConfig, (err, stats) => {
       stopSpinner(false)
       if (err) {
