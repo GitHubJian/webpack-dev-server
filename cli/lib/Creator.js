@@ -5,6 +5,7 @@ const execa = require('execa')
 const inquirer = require('inquirer')
 const semver = require('semver')
 const EventEmitter = require('events')
+const Generator = require('./Generator');
 
 class Creator extends EventEmitter {
   constructor(name, context, promptModules) {
@@ -38,7 +39,9 @@ class Creator extends EventEmitter {
 
   resolveIntroPrompts() {}
 
-  resolveOutroPrompts() {}
+  resolveOutroPrompts() {
+    const outroPrompts = []
+  }
 
   resolveFinalPrompts() {}
 
